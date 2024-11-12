@@ -11,7 +11,12 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { CreateCatDto, UpdateCatDto, ListAllEntities } from 'src/dto';
+import {
+  CreateCatDto,
+  FindOneParams,
+  ListAllEntities,
+  UpdateCatDto,
+} from './dto';
 
 @Controller('cats')
 export class CatsController {
@@ -25,7 +30,7 @@ export class CatsController {
   }
 
   @Get(':id')
-  findOne(@Param() params: any): string {
+  findOne(@Param() params: FindOneParams): string {
     return `This action returns a #${params.id} cat`;
   }
 
