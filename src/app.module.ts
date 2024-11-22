@@ -5,15 +5,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DogsModule } from './dogs/dogs.module';
 import { Dog } from './dogs/entities/dog.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.development.local', '.env.beta', '.env.production'],
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '127.0.0.1',
+      host: process.env.DATABASE_HOST,
       port: 3306,
-      username: 'root',
-      password: '263514',
+      username: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
       database: 'recordings',
       entities: [Dog],
       synchronize: true,
