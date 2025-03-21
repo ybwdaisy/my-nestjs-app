@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateDogDto } from './dto/create-dog.dto';
@@ -12,25 +12,46 @@ export class DogsService {
     private dogsRepository: Repository<Dog>,
   ) {}
 
-  create(createDogDto: CreateDogDto) {
-    return this.dogsRepository.save(createDogDto);
+  async create(createDogDto: CreateDogDto): Promise<Dog> {
+    const dog = this.dogsRepository.create(createDogDto);
+    return await this.dogsRepository.save(dog);
   }
 
-  findAll() {
-    return this.dogsRepository.find();
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ items: Dog[]; total: number }> {
+    const [items, total] = await this.dogsRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        createTime: 'DESC',
+      },
+    });
+
+    return {
+      items,
+      total,
+    };
   }
 
-  findOne(id: number) {
-    return this.dogsRepository.findOneBy({ id });
+  async findOne(id: number): Promise<Dog> {
+    const dog = await this.dogsRepository.findOneBy({ id });
+    if (!dog) {
+      throw new NotFoundException(`Dog with ID ${id} not found`);
+    }
+    return dog;
   }
 
-  async update(id: number, updateDogDto: UpdateDogDto) {
-    await this.dogsRepository.update(id, updateDogDto);
-    return null;
+  async update(id: number, updateDogDto: UpdateDogDto): Promise<Dog> {
+    const dog = await this.findOne(id);
+    Object.assign(dog, updateDogDto);
+    return await this.dogsRepository.save(dog);
   }
 
-  async remove(id: number) {
-    await this.dogsRepository.delete(id);
-    return null;
+  async remove(id: number): Promise<Dog> {
+    const dog = await this.findOne(id);
+    await this.dogsRepository.remove(dog);
+    return dog;
   }
 }
