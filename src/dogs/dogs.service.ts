@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateDogDto } from './dto/create-dog.dto';
 import { UpdateDogDto } from './dto/update-dog.dto';
 import { Dog } from './entities/dog.entity';
+import { AllDogs } from './interfaces/dog.interface';
 
 @Injectable()
 export class DogsService {
@@ -17,10 +18,7 @@ export class DogsService {
     return await this.dogsRepository.save(dog);
   }
 
-  async findAll(
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<{ items: Dog[]; total: number }> {
+  async findAll(page: number = 1, limit: number = 10): Promise<AllDogs> {
     const [items, total] = await this.dogsRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
@@ -44,9 +42,7 @@ export class DogsService {
   }
 
   async update(id: number, updateDogDto: UpdateDogDto): Promise<Dog> {
-    const dog = await this.findOne(id);
-    Object.assign(dog, updateDogDto);
-    return await this.dogsRepository.save(dog);
+    return await this.dogsRepository.save({ id, ...updateDogDto });
   }
 
   async remove(id: number): Promise<Dog> {

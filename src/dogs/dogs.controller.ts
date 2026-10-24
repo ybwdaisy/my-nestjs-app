@@ -13,27 +13,27 @@ import {
 import { DogsService } from './dogs.service';
 import { CreateDogDto, createDogSchema } from './dto/create-dog.dto';
 import { UpdateDogDto, updateDogSchema } from './dto/update-dog.dto';
-import { Dog } from './interfaces/dog.interface';
+import { AllDogs, Dog } from './interfaces/dog.interface';
 import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
 
 @Controller('dogs')
 export class DogsController {
   constructor(private readonly dogsService: DogsService) {}
 
-  @Post()
-  @UsePipes(new ZodValidationPipe(createDogSchema))
-  async create(@Body() createDogDto: CreateDogDto): Promise<Dog> {
+  @Get()
+  async findAll(): Promise<AllDogs> {
     try {
-      return await this.dogsService.create(createDogDto);
+      return await this.dogsService.findAll();
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
 
-  @Get()
-  async findAll(): Promise<Dog[] | null> {
+  @Post()
+  @UsePipes(new ZodValidationPipe(createDogSchema))
+  async create(@Body() createDogDto: CreateDogDto): Promise<Dog> {
     try {
-      return await this.dogsService.findAll();
+      return await this.dogsService.create(createDogDto);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -52,7 +52,7 @@ export class DogsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe(updateDogSchema)) updateDogDto: UpdateDogDto,
-  ): Promise<null> {
+  ): Promise<Dog> {
     try {
       return await this.dogsService.update(id, updateDogDto);
     } catch (error) {
@@ -61,7 +61,7 @@ export class DogsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number): Promise<null> {
+  async remove(@Param('id') id: number): Promise<Dog> {
     try {
       return this.dogsService.remove(id);
     } catch (error) {
